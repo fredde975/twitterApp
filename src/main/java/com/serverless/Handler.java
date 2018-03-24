@@ -92,8 +92,8 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
     }
 
 
-    protected String readTagFromQueryString(Map<String, Object> input) throws IllegalArgumentException {
-        String tag = null;
+    private String readTagFromQueryString(Map<String, Object> input) throws IllegalArgumentException {
+        String tag;
         HashMap queryStringParameters = (HashMap) input.get("queryStringParameters");
 
         if (queryStringParameters != null) {
