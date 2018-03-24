@@ -17,10 +17,9 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
     private static final String CONSUMER_SECRET = "fBop27mqeaK8tcYp5hmL7vmSWSfbp3ys4qP14JgWyqMsh5UA6X";
     private static final String ACCESS_TOKEN = "899157129722048512-YHceWk6N45aBm4g4rSrQH3EXxwPjaPG";
     private static final String ACCESS_TOKEN_SECRET = "hNI81vC3XbSp3tpiQ4m1dywL1KbJ0W3O0LqfcDwCsMAqO";
-
-    private static long sinceId = 0;
-    private static long numberOfTweets = 0;
     private static final int TWEETS_PER_QUERY = 100;
+    private static final int MAX_QUERIES = 5;
+
 
     private static Map<String, WordItem> resultMap = new HashMap<>();
 
@@ -60,13 +59,10 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
                     .build();
         }
 
-
-        //get latest tweets as of now
-        //At this point store sinceId in database
         Query queryMax = new Query(hashTag);
         queryMax.setCount(TWEETS_PER_QUERY);
         try {
-            getTweets2(queryMax, twitter);
+            getTweets(queryMax, twitter);
         } catch (TwitterException e) {
             LOG.error(e.getMessage());
             return ApiGatewayResponse.builder()
@@ -74,8 +70,6 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
                     .setObjectBody(e.getMessage())
                     .build();
         }
-        //queryMax = null;
-
 
         List<WordItem> wordItems = resultMap.values().stream()
                 .sorted()
@@ -87,7 +81,7 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
 
         return ApiGatewayResponse.builder()
                 .setStatusCode(200)
-                .setObjectBody(responseBody)
+                .setObjectBody(wordItems)
                 .build();
     }
 
@@ -105,6 +99,7 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
 
         throw new IllegalArgumentException("You must have the query string 'twitterTag=tagname' set in the url");
     }
+
 
     private void checkLimits(Twitter twitter) {
         Map<String, RateLimitStatus> rateLimitStatus = null;
@@ -129,8 +124,7 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
 
     }
 
-    private void getTweets2(Query query, Twitter twitter) throws TwitterException {
-        int MAX_QUERIES = 5;
+    private void getTweets(Query query, Twitter twitter) throws TwitterException {
         long maxID = -1;
         int totalTweets = 0;
 
@@ -172,9 +166,7 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
                     maxID = s.getId();
                 }
 
-                String text = s.getText();
-                List<String> ord = Arrays.asList(text.split("\\s+"));
-                ord.stream().forEach(word -> addWordToMap(word));
+                handleTweetText(s);
             }
         }
 
@@ -182,54 +174,7 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
         LOG.info(String.format("\n\nA total of %d tweets retrieved\n", totalTweets));
     }
 
-
-    private void getTweets(Query query, Twitter twitter) {
-        boolean getTweets = true;
-        long maxId = 0;
-        long whileCount = 0;
-
-        while (getTweets) {
-            try {
-                QueryResult result = twitter.search(query);
-                if (result.getTweets() == null || result.getTweets().isEmpty()) {
-                    getTweets = false;
-                } else {
-                    LOG.info("Gathered " + result.getTweets().size() + " tweets");
-                    int forCount = 0;
-                    for (Status status : result.getTweets()) {
-                        if (whileCount == 0 && forCount == 0) {
-                            sinceId = status.getId();//Store sinceId in database
-                            LOG.info("sinceId= " + sinceId);
-                        }
-
-                        //Thread.sleep(500);
-                        handleATweet(status);
-
-
-                        if (forCount == result.getTweets().size() - 1) {
-                            maxId = status.getId();
-                            LOG.info("maxId= " + maxId);
-                        }
-                        forCount++;
-                    }
-                    numberOfTweets = numberOfTweets + result.getTweets().size();
-                    query.setMaxId(maxId - 1);
-                }
-            } catch (TwitterException te) {
-                LOG.error("Couldn't connect: " + te);
-                System.exit(-1);
-            } catch (Exception e) {
-                LOG.error("Something went wrong: " + e);
-                System.exit(-1);
-            }
-            whileCount++;
-        }
-        LOG.info("Total tweets TWEETS_PER_QUERY=======" + numberOfTweets);
-
-
-    }
-
-    private void handleATweet(Status status) {
+    private void handleTweetText(Status status) {
         String text = status.getText();
         List<String> ord = Arrays.asList(text.split("\\s+"));
         ord.stream().forEach(word -> addWordToMap(word));
