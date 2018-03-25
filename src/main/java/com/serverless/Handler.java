@@ -32,56 +32,53 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
         final String hashTag;
         try {
             hashTag = "#" + readTagFromQueryString(input);
-        } catch (IllegalArgumentException e) {
-            LOG.error(e.getMessage());
-            return ApiGatewayResponse.builder()
-                    .setStatusCode(422)
-                    .setObjectBody(e.getMessage())
-                    .build();
-        }
 
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(CONSUMER_KEY)
-                .setOAuthConsumerSecret(CONSUMER_SECRET)
-                .setOAuthAccessToken(ACCESS_TOKEN)
-                .setOAuthAccessTokenSecret(ACCESS_TOKEN_SECRET);
-        TwitterFactory tf = new TwitterFactory(cb.build());
-        Twitter twitter = tf.getInstance();
 
-        try {
+            ConfigurationBuilder cb = new ConfigurationBuilder();
+            cb.setDebugEnabled(true)
+                    .setOAuthConsumerKey(CONSUMER_KEY)
+                    .setOAuthConsumerSecret(CONSUMER_SECRET)
+                    .setOAuthAccessToken(ACCESS_TOKEN)
+                    .setOAuthAccessTokenSecret(ACCESS_TOKEN_SECRET);
+            TwitterFactory tf = new TwitterFactory(cb.build());
+            Twitter twitter = tf.getInstance();
+
             checkLimits(twitter);
-        } catch (IllegalStateException e) {
-            LOG.error(e.getMessage());
-            return ApiGatewayResponse.builder()
-                    .setStatusCode(511)
-                    .setObjectBody("Twitter rate limit exceded")
-                    .build();
-        }
 
-        Query queryMax = new Query(hashTag);
-        queryMax.setCount(TWEETS_PER_QUERY);
-        try {
+
+            Query queryMax = new Query(hashTag);
+            queryMax.setCount(TWEETS_PER_QUERY);
             getTweets(queryMax, twitter);
-        } catch (TwitterException e) {
-            LOG.error(e.getMessage());
+
+
+            List<WordItem> wordItems = resultMap.values().stream()
+                    .sorted()
+                    .limit(100)
+                    .collect(Collectors.toList());
+
+            wordItems.stream().forEach(LOG::info);
+
+
             return ApiGatewayResponse.builder()
-                    .setStatusCode(500)
-                    .setObjectBody(e.getMessage())
+                    .setStatusCode(200)
+                    .setObjectBody(wordItems)
                     .build();
+
+        } catch (IllegalArgumentException e) {
+            return getApiGatewayResponse(e, 422);
+        } catch (IllegalStateException e) {
+            return getApiGatewayResponse(e, 511);
+        } catch (TwitterException e) {
+            return getApiGatewayResponse(e, 500);
         }
+    }
 
-        List<WordItem> wordItems = resultMap.values().stream()
-                .sorted()
-                .limit(100)
-                .collect(Collectors.toList());
-
-        wordItems.stream().forEach(LOG::info);
-
+    private ApiGatewayResponse getApiGatewayResponse(Exception e, int responseCode) {
+        LOG.error(e.getMessage());
 
         return ApiGatewayResponse.builder()
-                .setStatusCode(200)
-                .setObjectBody(wordItems)
+                .setStatusCode(responseCode)
+                .setObjectBody(e.getMessage())
                 .build();
     }
 
