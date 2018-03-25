@@ -19,11 +19,9 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
     private static final String ACCESS_TOKEN_SECRET = "hNI81vC3XbSp3tpiQ4m1dywL1KbJ0W3O0LqfcDwCsMAqO";
     private static final int TWEETS_PER_QUERY = 100;
 
-    //Map<String, WordItem> resultMap = new HashMap<>();
-    TwitterService twitterService = new TwitterService();
-
     @Override
     public ApiGatewayResponse handleRequest(Map<String, Object> input, Context context) {
+        TwitterService twitterService = new TwitterService();
         LOG.info("received: " + input);
 
         final String hashTag;
