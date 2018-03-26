@@ -18,8 +18,12 @@ Jag har inte satt upp någon Swaggerdokumentation i Amazon Gateway än. Följand
 
 
 
+
 Nedan är lite information om hur tjänsten skapats och deployats med Serverless Framework
 ===========================================================================================
+I filen serverless.yml sätter man upp sin infrastruktur. Läs mer på https://serverless.com/
+
+
 
 info
 ====================
