@@ -1,3 +1,25 @@
+Information om tjänsten
+=======================
+Tjänsten körs via API Gateway som står för REST-gränssnittet och för begränsningen av antalet parallella requests. Burst
+Limit är satt till 3, dvs högst tre samtidiga anrop mot den bakomliggande lambdatjänsten tillåts.
+
+Url för att köra tjänsten: https://5gvwqpvweb.execute-api.eu-west-1.amazonaws.com/dev/sortedTweets?twitterTag=bieber
+
+Tjänsten är satt till att högst läsa in 500 tweets. Ut från tjänsten returneras en lista (högst 100 ord) med populäraste
+orden, sorterat i fallande popularitetsordning.
+
+Jag har inte satt upp någon Swaggerdokumentation i Amazon Gateway än. Följande felkoder kan man få tillbaka:
+
+422     Inte rätt information i queryparametern eller queryparametern saknas
+429     Amazon API Gateway ser att för många anrop görs mot API:et
+500     Om ett TwitterException fångats i koden
+509     Alla tillgängliga anrop till twitter är slut
+
+
+
+
+Nedan är lite information om hur tjänsten skapats och deployats med Serverless Framework
+===========================================================================================
 
 info
 ====================

@@ -3,6 +3,11 @@ package com.serverless;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.serverless.exceptions.RateExceededException;
+import com.serverless.exceptions.TagInputException;
+import com.serverless.models.ApiGatewayResponse;
+import com.serverless.models.WordItem;
+import com.serverless.utils.TwitterUtil;
 import org.apache.log4j.Logger;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -36,12 +41,12 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
 
             return getApiGatewayResponse(wordItems);
 
-        } catch (IllegalArgumentException e) {
+        } catch (TagInputException e) {
             return getApiGatewayExceptionResponse(e, 422);  //not correct input
-        } catch (IllegalStateException e) {
-            return getApiGatewayExceptionResponse(e, 511);  //read limit reached
         } catch (TwitterException e) {
             return getApiGatewayExceptionResponse(e, 500);  //any Twitter exception
+        } catch (RateExceededException e) {
+            return getApiGatewayExceptionResponse(e, 509);  //read limit reached
         }
     }
 
@@ -84,7 +89,7 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
     }
 
 
-    private String createHashtagFromQueryString(Map<String, Object> input) throws IllegalArgumentException {
+    private String createHashtagFromQueryString(Map<String, Object> input) throws TagInputException {
         String tag;
         HashMap queryStringParameters = (HashMap) input.get("queryStringParameters");
 
@@ -96,7 +101,7 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
             }
         }
 
-        throw new IllegalArgumentException("You must have the query string 'twitterTag=tagname' set in the url, i.e. don't use '#' in the query");
+        throw new TagInputException("You must have the query string 'twitterTag=tagname' set in the url, i.e. don't use '#' in the query");
     }
 
 

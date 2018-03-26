@@ -1,5 +1,6 @@
-package com.serverless;
+package com.serverless.utils;
 
+import com.serverless.exceptions.RateExceededException;
 import org.apache.log4j.Logger;
 import twitter4j.RateLimitStatus;
 import twitter4j.Twitter;
@@ -10,7 +11,7 @@ import java.util.Map;
 public class TwitterUtil {
     private static final Logger LOG = Logger.getLogger(TwitterUtil.class);
 
-    public static void checkLimits(Twitter twitter) throws TwitterException {
+    public static void checkLimits(Twitter twitter) throws TwitterException, RateExceededException {
 
         Map<String, RateLimitStatus> rateLimitStatus;
 
@@ -25,7 +26,7 @@ public class TwitterUtil {
         LOG.info(message);
 
         if (searchTweetsRateLimit.getRemaining() == 0) {
-            throw new IllegalStateException(message);
+            throw new RateExceededException(message);
         }
 
     }

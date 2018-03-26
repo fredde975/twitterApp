@@ -1,4 +1,4 @@
-package com.serverless;
+package com.serverless.models;
 
 import java.util.Map;
 

@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TwitterService {
+public class TwitterRepository {
     private static final org.apache.log4j.Logger LOG = Logger.getLogger(TwitterService.class);
     private static final int MAX_QUERIES = 5;
     private Map<String, WordItem> resultMap = new HashMap<>();
