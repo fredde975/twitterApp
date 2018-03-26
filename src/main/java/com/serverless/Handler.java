@@ -33,11 +33,13 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
         try {
             hashTag = createHashtagFromQueryString(input);
 
-            Twitter twitter = createTwitterInstance();
-            TwitterUtil.checkLimits(twitter);
-            Query queryMax = createQuery(hashTag);
-            Map<String, WordItem> resultMap = twitterService.getTweets(queryMax, twitter);
-            List<WordItem> wordItems = createSortedList(resultMap);
+//            Twitter twitter = createTwitterInstance();
+//            TwitterUtil.checkLimits(twitter);
+//            Query queryMax = createQuery(hashTag);
+//            Map<String, WordItem> resultMap = twitterService.getTweets(queryMax, twitter);
+//            List<WordItem> wordItems = createSortedList(resultMap);
+
+            List<WordItem> wordItems = twitterService.handleRequest(hashTag);
 
             return getApiGatewayResponse(wordItems);
 
@@ -50,25 +52,6 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
         }
     }
 
-
-
-    private Query createQuery(String hashTag) {
-        Query queryMax = new Query(hashTag);
-        queryMax.setCount(TWEETS_PER_QUERY);
-        return queryMax;
-    }
-
-
-    private Twitter createTwitterInstance() {
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(CONSUMER_KEY)
-                .setOAuthConsumerSecret(CONSUMER_SECRET)
-                .setOAuthAccessToken(ACCESS_TOKEN)
-                .setOAuthAccessTokenSecret(ACCESS_TOKEN_SECRET);
-        TwitterFactory tf = new TwitterFactory(cb.build());
-        return tf.getInstance();
-    }
 
 
     private ApiGatewayResponse getApiGatewayResponse(List<WordItem> wordItems) {
@@ -105,14 +88,35 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
     }
 
 
-    private List<WordItem> createSortedList(Map<String, WordItem> resultMap) {
-        List<WordItem> wordItems = resultMap.values().stream()
-                .sorted()
-                .limit(100)
-                .collect(Collectors.toList());
+//    private List<WordItem> createSortedList(Map<String, WordItem> resultMap) {
+//        List<WordItem> wordItems = resultMap.values().stream()
+//                .sorted()
+//                .limit(100)
+//                .collect(Collectors.toList());
+//
+//        wordItems.stream().forEach(LOG::info);
+//        return wordItems;
+//    }
 
-        wordItems.stream().forEach(LOG::info);
-        return wordItems;
-    }
+    /*
+    private Query createQuery(String hashTag) {
+        Query queryMax = new Query(hashTag);
+        queryMax.setCount(TWEETS_PER_QUERY);
+        return queryMax;
+    }*/
+
+//
+//    private Twitter createTwitterInstance() {
+//        ConfigurationBuilder cb = new ConfigurationBuilder();
+//        cb.setDebugEnabled(true)
+//                .setOAuthConsumerKey(CONSUMER_KEY)
+//                .setOAuthConsumerSecret(CONSUMER_SECRET)
+//                .setOAuthAccessToken(ACCESS_TOKEN)
+//                .setOAuthAccessTokenSecret(ACCESS_TOKEN_SECRET);
+//        TwitterFactory tf = new TwitterFactory(cb.build());
+//        return tf.getInstance();
+//    }
+
+
 
 }
