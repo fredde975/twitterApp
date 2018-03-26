@@ -1,5 +1,7 @@
+# twitterServerless
+
 Information om tjänsten
-=======================
+----------------------
 Tjänsten körs via API Gateway som står för REST-gränssnittet och för begränsningen av antalet parallella requests. Burst
 Limit är satt till 3, dvs högst tre samtidiga anrop mot den bakomliggande lambdatjänsten tillåts.
 
@@ -19,8 +21,8 @@ Jag har inte satt upp någon Swaggerdokumentation i Amazon Gateway än. Följand
 
 
 
-Nedan är lite information om hur tjänsten skapats och deployats med Serverless Framework
-===========================================================================================
+Info Serverless Framework
+-------------------------
 I filen serverless.yml sätter man upp sin infrastruktur. Läs mer på https://serverless.com/
 
 
